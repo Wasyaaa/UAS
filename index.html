@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UAS BUAT AYANG</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .question {
+            margin: 20px 0;
+        }
+        .options {
+            list-style: none;
+            padding: 0;
+        }
+        .options li {
+            margin: 10px 0;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .score {
+            text-align: center;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        .message {
+            text-align: center;
+            font-size: 20px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+        .timer {
+            text-align: center;
+            font-size: 20px;
+            margin-top: 20px;
+            font-weight: bold;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Selamat Mengerjakan Sayang</h1>
+        <div id="quiz"></div>
+        <div class="timer" id="timer">Waktu Tersisa: 20:00</div>
+        <div class="score" id="score"></div>
+        <div class="message" id="message"></div>
+        <button id="submit" onclick="submitQuiz()">Sudah Siapp :)</button>
+    </div>
+
+    <script>
+        const questions = [
+            { question: "Apa Warna Kesukaan Rui?", options: ["Biru", "Merah", "Hitam", "Coklat"], answer: 2 },
+            { question: "Tanggal Berapa Rui Pertama x Sakit Epilepsi?", options: ["12", "20", "5", "18"], answer: 3 },
+            { question: "Berikut Ini Adalah Kata Yang Rui Bilang Ketika Ayang Ngambek, Kecuali?", options: ["Damai Ya Sayang", "Jangan Lah Gitu Ayy", "Bacot", "Rui Minta Maaf Ya"], answer: 2 },
+            { question: "Apa Yang Membuat Rui Senang?", options: ["Disayang", "Dibacok", "Dipukili", "Dibegal"], answer: 0 },
+            { question: "Apa Game Kesukaan Rui?", options: ["Gta", "Emel", "Pubg", "Free Fire"], answer: 1 },
+            { question: "Apa Yang Rui Suka Ketika Ayang Berbuat Salah?", options: ["Ikut Marah", "Ngamebk", "Mukuli Rui Karna Rui Marah", "Minta Maaf Dan Mengakui Kesalahan"], answer: 3 },
+            { question: "Apa Hobby Rui Ketika Berolahraga?", options: ["Badminton", "Berenang", "Ngedance", "Futsal"], answer: 0 },
+            { question: "Apa Nama Lagu Fav Rui?", options: ["Drive By", "Reminder", "Apt Apt", "Kill This Love"], answer: 1 },
+            { question: "Jika Rui Terjatuh Dan Mengalami Luka Apa Yang Harus Ayang Lakukan?", options: ["Menelpon Ambulan", "Mengobati Rui", "Mencium Rui", "Ikutan Jatuh"], answer: 2 },
+            { question: "Jika Ayang Mengancam Untuk Ngeblok Rui. Apa Yang Rui Lakukan?", options: ["Login Emel", "Bodo Amat", "Otw", "Scroll TikTok"], answer: 2 }
+        ];
+
+        let score = 0;
+        let timeLeft = 1200;  // 20 minutes in seconds
+        let timerInterval;
+
+        function loadQuiz() {
+            const quizContainer = document.getElementById('quiz');
+            quizContainer.innerHTML = '';
+            
+            questions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.classList.add('question');
+
+                const questionTitle = document.createElement('h3');
+                questionTitle.textContent = `${index + 1}. ${q.question}`;
+                questionDiv.appendChild(questionTitle);
+
+                const optionsList = document.createElement('ul');
+                optionsList.classList.add('options');
+
+                q.options.forEach((option, i) => {
+                    const optionItem = document.createElement('li');
+
+                    const optionInput = document.createElement('input');
+                    optionInput.type = 'radio';
+                    optionInput.name = `question${index}`;
+                    optionInput.value = i;
+                    optionItem.appendChild(optionInput);
+
+                    const optionLabel = document.createElement('label');
+                    optionLabel.textContent = option;
+                    optionItem.appendChild(optionLabel);
+
+                    optionsList.appendChild(optionItem);
+                });
+
+                questionDiv.appendChild(optionsList);
+                quizContainer.appendChild(questionDiv);
+            });
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                document.getElementById('timer').textContent = `Waktu Tersisa: ${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+                
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    submitQuiz();  // Automatically submit when time is up
+                    document.getElementById('submit').disabled = true;  // Disable submit button
+                }
+
+                timeLeft--;
+            }, 1000);
+        }
+
+        function submitQuiz() {
+            // Stop the timer and hide it
+            clearInterval(timerInterval);
+            document.getElementById('timer').style.display = 'none';
+
+            score = 0;
+            const results = [];
+
+            questions.forEach((q, index) => {
+                const selectedOption = document.querySelector(`input[name="question${index}"]:checked`);
+                const isCorrect = selectedOption && parseInt(selectedOption.value) === q.answer;
+                if (isCorrect) {
+                    score += 10;
+                }
+                results.push({
+                    question: q.question,
+                    selected: selectedOption ? selectedOption.value : null,
+                    correct: q.answer
+                });
+            });
+
+            // Update score in the page
+            document.getElementById('score').textContent = `Skor Anda: ${score} / ${questions.length * 10}`;
+
+            // Display message based on score
+            const messageElement = document.getElementById('message');
+            if (score < 80) {
+                messageElement.textContent = "Ayang ga sayang Rui :(";
+            } else {
+                messageElement.textContent = "Yeay Ayang ga remed I lopp you sayangg :)";
+            }
+
+            // Optionally store the results in localStorage (if needed)
+            localStorage.setItem('score', score);
+            localStorage.setItem('results', JSON.stringify(results));
+        }
+
+        // Start the timer when the page loads
+        loadQuiz();
+        startTimer();
+    </script>
+</body>
+</html>
